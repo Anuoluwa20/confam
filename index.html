@@ -1943,9 +1943,34 @@ body,.foot{background:#FFFFFF}
 .hx .hx-try{font-size:16px}
 @media (max-width:1000px){#h3d{inset:0}}
 @media (max-width:600px){.hx-h{font-size:48px}.hx-sub{font-size:18px;line-height:27px}.hx .hx-try{font-size:14px}}
+
+/* ===== v33 · interactive motion ===== */
+.rv{opacity:0;translate:0 24px;transition:opacity .7s cubic-bezier(.2,.7,.2,1),translate .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.rv.in{opacity:1;translate:0 0}
+.hx-h .w{display:inline-block;opacity:0;translate:0 .5em;rotate:3deg;transition:opacity .6s ease,translate .7s cubic-bezier(.2,.9,.25,1),rotate .7s cubic-bezier(.2,.9,.25,1)}
+.hx-h.on .w{opacity:1;translate:0 0;rotate:0deg}
+.mag{transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.bc{transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.bc::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(320px circle at var(--mx,50%) var(--my,50%),rgba(255,194,26,.16),transparent 60%)}
+.bc{position:relative}
+.bc:hover::after{opacity:1}
+.bc .bc-vis>*{transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.bc:hover .bc-vis>*:first-child{transform:translateY(-6px) scale(1.02)}
+.um-bar i{transform-origin:left;transform:scaleX(0);transition:transform 1.4s cubic-bezier(.2,.8,.2,1) .2s}
+.bc.in .um-bar i{transform:scaleX(1)}
+.src-t{transition:translate .2s linear}
+.cprog{position:fixed;left:0;top:0;height:3px;width:100%;background:var(--marigold);transform-origin:0 50%;transform:scaleX(0);z-index:100;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.rv,.hx-h .w{opacity:1!important;translate:none!important;rotate:none!important;transition:none}.mag,.bc,.bc .bc-vis>*{transition:none!important;transform:none!important}.um-bar i{transform:none;transition:none}.cprog{display:none}}
+
+/* ===== v34 · demo data visible + typeable chat ===== */
+.demo-pill{display:inline-block;padding:1px 8px;border-radius:999px;background:#FFF1C7;color:#6B4E00;font-family:var(--body);font-size:12px}
+.wa-input input.wa-field{border:0;outline:none;font:inherit;font-size:14px;color:var(--ink);min-height:40px}
+.wa-input input.wa-field:focus{box-shadow:0 0 0 2px var(--ink)}
+.wa-input button.wa-send{border:0;cursor:pointer;padding:0}
 </style>
 </head>
 <body>
+<div class="cprog" id="cprog" aria-hidden="true"></div>
 <a class="skip" href="#main">Skip to content</a>
 <header class="topnav" id="topnav">
   <div class="shell">
@@ -2258,7 +2283,7 @@ body,.foot{background:#FFFFFF}
             <button type="button" data-chat="0123456789">0123456789</button>
             <button type="button" data-chat="Double your money in 30 days">Double your money…</button>
           </div>
-          <div class="wa-input"><span class="wa-plus" aria-hidden="true">+</span><span class="wa-field">Message</span><i class="wa-send" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-7z" fill="currentColor"></path></svg></i></div>
+          <form class="wa-input" id="wa-form" autocomplete="off"><span class="wa-plus" aria-hidden="true">+</span><label for="wa-q" class="sr">Message the Confam bot</label><input class="wa-field" id="wa-q" type="text" placeholder="Type any account, phone or @handle" maxlength="80"><button class="wa-send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-7z" fill="currentColor"></path></svg></button></form>
         </div>
         
       </div>
@@ -2599,11 +2624,48 @@ body,.foot{background:#FFFFFF}
     return null;
   }
 
+
+  /* ---------- demo: believable made-up results for anything typed ---------- */
+  function hsh(t){var h=2166136261;for(var i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+  function rng(seed){return function(){seed=(seed+0x6D2B79F5)>>>0;var t=seed;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+  var FK={
+    names:['ADEBAYO T. STORES','CHIOMA O. ENTERPRISES','KINGSLEY A.','BLESSING U. GADGETS','IBRAHIM S. VENTURES','TEMITOPE F.','EMEKA N. AND SONS','HALIMA B.','GRACE O. COLLECTIONS','FAVOUR I. HAIRS'],
+    banks:['Opay','Moniepoint','Palmpay','Access Bank','GTBank','Kuda','UBA','Zenith Bank'],
+    srcs:['TikTok','X','Instagram','Facebook','Nairaland'],
+    bad:['Paid ₦{a} for a phone on {d}. They stopped replying after the money landed.','Ordered two items, got one. They say the other is “still coming” three weeks later.','Asked for a delivery fee after I had paid in full. Then blocked me.','The item was not what was in the photo. They refused a refund.','Paid for hair on {d}. Still waiting. Their page keeps posting new stock.','Sent ₦{a}. Account name was different from the page name. Never heard back.','They said pay first, delivery tomorrow. That was a month ago.','Got a fake. Same page has changed its name twice.'],
+    ok:['Bought shoes from them in August. Came on time, as pictured.','Delivery was late but they refunded the fee without stress.','Ordered twice, both fine. Packaging was neat.'],
+    months:['14 Oct','2 Oct','29 Sep','21 Sep','11 Sep','6 Sep','30 Aug','17 Aug','3 Aug','26 Jul'],
+    amts:['45,000','62,500','85,000','120,000','185,000','240,000','18,000','33,000']
+  };
+  function fake(q){
+    var k=kind(q),R=rng(hsh(q.toLowerCase())),pick=function(a){return a[Math.floor(R()*a.length)]};
+    var s=q.toLowerCase();
+    if(k.k==='offer'&&/(double|%|percent|return|invest|profit|roi|monthly|weekly|daily|forex|crypto|ponzi)/.test(s)) return {
+      tone:'rust',finding:'This offer follows a known scam pattern.',caveat:'We searched for the words of the offer, not a named company. Tell us who is offering it for a fuller check.',
+      chips:[{c:'rust',i:'list',t:'Known pattern'},{c:'line',i:'lens',t:'Not on SEC list we checked'}],posts:[],
+      records:[['SEC list of registered operators','Not on the list we checked today'],['CAC registration','Not a licence to take investments']],
+      pattern:['Fixed, very high returns','Real investments go up and down. A fixed, high return paid on a schedule is how early members get paid with later members’ money.'],
+      next:'Ask for their SEC registration number, then look it up on the SEC website yourself.',share:'the offer follows a known scam pattern and is not on the SEC list checked',maths:true};
+    var name=pick(FK.names),bank=pick(FK.banks),roll=R(),n=roll<.3?0:roll<.55?1:roll<.85?2:3+Math.floor(R()*2);
+    var mo=FK.months.slice().sort(function(){return R()-.5}),posts=[],bad=FK.bad.slice().sort(function(){return R()-.5}),sr=FK.srcs.slice().sort(function(){return R()-.5});
+    for(var i=0;i<n;i++){var t=bad[i].replace('{a}',pick(FK.amts)).replace('{d}',pick(['2 Oct','19 Sep','5 Sep']));posts.push({src:sr[i%sr.length],date:mo[i],text:t})}
+    posts.sort(function(a,b){return FK.months.indexOf(a.date)-FK.months.indexOf(b.date)});
+    var match=R()>.3,acct=k.k==='account'||k.k==='phone';
+    var records=[[acct?'Name on the account':'Name linked to this handle',name+(acct?' · '+bank:'')],['CAC business name search',R()>.5?'Found (sample)':'No match found'],['Matches who you are paying?',match?'You check this':'Name looks different, ask why']];
+    if(!n) return {tone:'quiet',finding:'Nothing found in the places we searched.',caveat:'That is not proof it is safe. New scams have no posts yet.',
+      chips:[{c:'',i:'lens',t:'Nothing found'},{c:'line',i:'list',t:'Name shown below'}],posts:[],records:records,pattern:null,
+      next:'Check the account name matches the person you think you are paying. Then send this to one person before you pay.',share:'no public posts in the places searched. That is not proof it is safe'};
+    var pats=[['Pay first, then silence','People describe paying in full before delivery and then losing contact. That is the most common shape of a vendor scam.'],['Extra fee after payment','A new “delivery” or “clearing” fee appears after you have paid. Paying it rarely brings the item.'],['Photo is not the item','What arrives is not what was shown. Ask for a live video of the exact item before paying.']];
+    return {tone:'rust',finding:n+' public post'+(n>1?'s':'')+' found about this '+(acct?'account':'handle')+'.',caveat:'These are other people’s posts. We have not proven them. Read them and decide.',
+      chips:[{c:'rust',i:'bubble',t:n+' public post'+(n>1?'s':'')},{c:'',i:'same',t:match?'Name matches':'Name differs'}],posts:posts,records:records,pattern:pick(pats),
+      next:'Ask to pay on delivery, or pay through a service that holds the money until the item arrives.',share:n+' public post'+(n>1?'s':'')+' from people who say they had problems after paying'};
+  }
+
   /* ---------- run a check ---------- */
   function run(q){
     q=(q||'').trim();
     if(!q) return false;
-    last={q:q,kind:kind(q),data:sample(q),when:today()};
+    last={q:q,kind:kind(q),data:sample(q)||fake(q),when:today()};
     location.hash='check';
     show();
     $('#check-q').value=q;
@@ -2622,7 +2684,7 @@ body,.foot{background:#FFFFFF}
 
   function render(){
     var r=last,d=r.data,root=$('#result-root'),h='';
-    var hd='<div class="res-head"><div class="stack tight"><p class="meta">'+esc(r.kind.label)+' · Checked '+esc(r.when)+' · Sample data</p><h1 class="res-q">'+esc(r.kind.shown)+'</h1></div><a class="btn ghost" href="#check">Check another</a></div>';
+    var hd='<div class="res-head"><div class="stack tight"><p class="meta">'+esc(r.kind.label)+' · Checked '+esc(r.when)+' · <span class="demo-pill">Demo · made-up results</span></p><h1 class="res-q">'+esc(r.kind.shown)+'</h1></div><a class="btn ghost" href="#check">Check another</a></div>';
     if(!d){
       h+=hd+'<div class="res-grid"><div class="res-main"><div class="card lift"><p class="finding">The live search is not connected yet.</p><p>This demo only knows three samples. Tap one to see how a real result will read.</p>';
       h+='<div class="samples"><button type="button" data-sample="@glowgadgets_demo">@glowgadgets_demo</button><button type="button" data-sample="0123456789">0123456789</button><button type="button" data-sample="Double your money in 30 days">Double your money in 30 days</button></div></div></div></div>';
@@ -2801,6 +2863,22 @@ body,.foot{background:#FFFFFF}
         setTimeout(function(){botSay(D[k].r,D[k].q,function(){busy=false})},350);
       });
     });
+    function card(q){
+      var d=sample(q)||fake(q),k=kind(q),hit=d.tone==='rust';
+      var srcs=(d.posts||[]).map(function(p){return p.src});
+      var rows=d.posts&&d.posts.length?['TikTok','X','Instagram','Facebook','Nairaland'].map(function(a){var c=srcs.filter(function(x){return x===a}).length;return '<li'+(c?' class="hit"':'')+'>'+a+'<em>'+(c?c+' post'+(c>1?'s':''):'none')+'</em></li>'}).join(''):(d.records||[]).slice(0,2).map(function(r){return '<li>'+esc(r[0])+'<em>'+esc(r[1])+'</em></li>'}).join('');
+      var html='<div class="wc"><p class="wc-h'+(hit?' rust':'')+'">'+esc(d.finding.replace(/\.$/,''))+'</p><p class="wc-s">'+esc(k.shown)+' · '+esc(d.caveat.split('.')[0])+'</p><ul>'+rows+'</ul>'+(d.pattern?'<p class="wc-f">Pattern: <b>'+esc(d.pattern[0].toLowerCase())+'</b></p>':'')+'</div><p class="wc-src">Demo · made-up results</p>';
+      var q2=[];
+      if(d.posts&&d.posts.length)q2.push(['See the posts',d.posts.map(function(p,i){return (i+1)+'. '+p.src+', '+p.date+': '+esc(p.text)}).join('\n')+'\n\n<b>Next safe step:</b> '+esc(d.next)]);
+      else q2.push(['What should I do?',esc(d.next)]);
+      q2.push(['Send to someone',fwd(k.shown,d.share.charAt(0).toUpperCase()+d.share.slice(1)+'.')]);
+      if(d.maths)q2.push(['See the maths','Open “Investment offers” on the site to see what that promise becomes in one year.']);
+      return {r:html,q:q2};
+    }
+    var wf=document.getElementById('wa-form'),wq=document.getElementById('wa-q');
+    if(wf)wf.addEventListener('submit',function(e){e.preventDefault();var v=wq.value.trim();if(!v||busy)return;busy=true;wq.value='';
+      $$('[data-chat]').forEach(function(x){x.setAttribute('aria-pressed','false')});$$('.qr button',body).forEach(function(x){x.disabled=true});
+      bubble('me',esc(v));var c=card(v);setTimeout(function(){botSay(c.r,c.q,function(){busy=false})},350)});
     var wa=body.closest('.wa');
     if(wa&&'IntersectionObserver' in window){
       var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.disconnect();setTimeout(function(){var f=$('[data-chat]');if(f&&!busy)f.click()},reduce?0:700)}})},{threshold:.5});
@@ -3215,6 +3293,48 @@ function draw(){var t=(performance.now()-t0)/1000;
 draw();
 }
   (function(){var tries=0;(function wait(){if(window.THREE){heroGL();return}if(++tries<80)setTimeout(wait,100)})()})();
+
+  /* ---------- interactive motion ---------- */
+  (function(){
+    var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,fine=window.matchMedia&&matchMedia('(pointer:fine)').matches;
+    /* 1. headline words rise in */
+    var h=document.querySelector('.hx-h');
+    if(h){[].forEach.call(h.querySelectorAll('span'),function(sp){sp.innerHTML=sp.textContent.split(' ').map(function(w){return '<span class="w">'+w+'</span>'}).join(' ')});
+      [].forEach.call(h.querySelectorAll('.w'),function(w,i){w.style.transitionDelay=(i*.07)+'s'});
+      requestAnimationFrame(function(){requestAnimationFrame(function(){h.classList.add('on')})})}
+    /* 2. scroll reveal with stagger */
+    var sel='.head-row,.os-head,.pr-head,.pc-panel,.os-list li,.bc,.pr-orb,.sl-copy,.sl-art,.feed,.ld .wa,.ld-feats li,.cta2,.os-photo';
+    var els=[].slice.call(document.querySelectorAll(sel));
+    els.forEach(function(el){var sib=el.parentElement?[].indexOf.call(el.parentElement.children,el):0;el.classList.add('rv');el.style.setProperty('--d',Math.min(sib,5)*.08+'s')});
+    if(rm||!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')})}
+    else{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.15,rootMargin:'0px 0px -40px 0px'});els.forEach(function(e){io.observe(e)})}
+    if(rm)return;
+    /* 3. scroll progress line */
+    var cp=document.getElementById('cprog');
+    function prog(){if(!cp)return;var d=document.documentElement,m=d.scrollHeight-innerHeight;cp.style.transform='scaleX('+(m>0?scrollY/m:0)+')'}
+    addEventListener('scroll',prog,{passive:true});prog();
+    if(!fine)return;
+    /* 4. magnetic yellow buttons */
+    [].forEach.call(document.querySelectorAll('.btn.yellow,.hb2 .btn,.cta-sec .btn'),function(b){b.classList.add('mag');
+      b.addEventListener('pointermove',function(e){var r=b.getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;b.style.transform='translate('+x*.18+'px,'+y*.28+'px)'});
+      b.addEventListener('pointerleave',function(){b.style.transform=''})});
+    /* 5. cards tilt toward the cursor, with a soft spotlight */
+    [].forEach.call(document.querySelectorAll('.bc'),function(c){
+      c.addEventListener('pointermove',function(e){var r=c.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+        c.style.setProperty('--mx',px*100+'%');c.style.setProperty('--my',py*100+'%');
+        c.style.transform='perspective(900px) rotateY('+((px-.5)*6)+'deg) rotateX('+((.5-py)*6)+'deg) translateY(-3px)'});
+      c.addEventListener('pointerleave',function(){c.style.transform=''})});
+    /* 6. chat source cards drift away from the cursor */
+    var ld=document.querySelector('.ld'),tiles=[].slice.call(document.querySelectorAll('.src-t'));
+    if(ld&&tiles.length){ld.addEventListener('pointermove',function(e){var r=ld.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+      tiles.forEach(function(t,i){var k=(i%3+1)*10;t.style.translate=(-x*k)+'px '+(-y*k)+'px'})});
+      ld.addEventListener('pointerleave',function(){tiles.forEach(function(t){t.style.translate=''})})}
+    /* 7. 3D lens panel and how-it-works phone lean with the cursor */
+    [['.pr-orb','.pr-orb .orb'],['#how2','.stage2 .iph']].forEach(function(p){var host=document.querySelector(p[0]),t=document.querySelector(p[1]);if(!host||!t)return;
+      t.style.transition='transform .4s cubic-bezier(.2,.8,.2,1)';
+      host.addEventListener('pointermove',function(e){var r=host.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform='perspective(1200px) rotateY('+x*8+'deg) rotateX('+(-y*6)+'deg)'});
+      host.addEventListener('pointerleave',function(){t.style.transform=''})});
+  })();
 </script>
 </body>
 </html>
